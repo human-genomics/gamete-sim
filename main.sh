@@ -47,7 +47,12 @@ if [[ -z "${PYTHON:-}" ]]; then
 fi
 
 # ---- Logging: everything below goes to the terminal and to logs/ -------------
-mkdir -p "${DATA_DIR}/logs" "${OUTPUT}"
+if ! mkdir -p "${DATA_DIR}/logs" "${OUTPUT}" 2>/dev/null; then
+    echo "ERROR: cannot write to ${DATA_DIR}." >&2
+    echo "  Docker with --user: create the host folder before 'docker run' (mkdir -p gamete-sim-data)." >&2
+    echo "  If Docker already created it, it belongs to root: use a new folder or fix its owner." >&2
+    exit 1
+fi
 LOG_FILE="${DATA_DIR}/logs/run_$(date +%Y%m%d_%H%M%S).log"
 exec > >(tee -a "${LOG_FILE}") 2>&1
 echo "gamete-sim: N_GAMETES=${N_GAMETES} SEED=${SEED} DATA_DIR=${DATA_DIR}"

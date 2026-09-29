@@ -4,7 +4,9 @@
 # Build:
 #   docker build -t gamete-sim .
 #
-# Run (outputs land in ./gamete-sim-data/output; downloads are cached in ./gamete-sim-data):
+# Run (outputs land in ./gamete-sim-data/output; downloads are cached in ./gamete-sim-data).
+# Make the folder first: if Docker makes it, root owns it and --user cannot write.
+#   mkdir -p gamete-sim-data
 #   docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd)/gamete-sim-data:/data" gamete-sim
 #
 # Settings: -e N_GAMETES=10000 -e SEED=42

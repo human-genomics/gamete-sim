@@ -13,16 +13,18 @@ Simulates **exactly 10,000 human gametes** as GRCh38 (hg38) haplotype segments, 
 ```bash
 git clone https://github.com/human-genomics/gamete-sim.git && cd gamete-sim
 docker build -t gamete-sim .
+mkdir -p gamete-sim-data
 docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd)/gamete-sim-data:/data" gamete-sim
 ```
 
 Or use the image that CI publishes from `main`:
 
 ```bash
+mkdir -p gamete-sim-data
 docker run --rm --user "$(id -u):$(id -g)" -v "$(pwd)/gamete-sim-data:/data" ghcr.io/human-genomics/gamete-sim:latest
 ```
 
-Outputs go to `gamete-sim-data/output/`. Downloads (39 MB) are cached in `gamete-sim-data/downloads/`.
+Outputs go to `gamete-sim-data/output/`. Downloads (39 MB) are cached in `gamete-sim-data/downloads/`. Make the folder before `docker run`: if Docker makes it, root owns it and `--user` cannot write to it. `--user` makes the output files yours, not root's.
 
 ### Local
 
