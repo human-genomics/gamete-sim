@@ -1,0 +1,14 @@
+# Runtime data (downloaded or generated at run time)
+downloads/
+output/
+tools/
+logs/
+
+# Not needed in the image
+.git
+.github
+docs/
+tests/
+__pycache__/
+*.pyc
+.pytest_cache/

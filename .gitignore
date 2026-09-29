@@ -1,0 +1,10 @@
+# Downloaded inputs, generated outputs, local tools (all recreated by main.sh)
+downloads/
+output/
+tools/
+logs/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/

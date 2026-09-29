@@ -1,0 +1,10 @@
+[project]
+name = "gamete-sim"
+version = "1.0.0"
+description = "hg38-native simulation of human gametes with sex-specific crossover interference"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-or-later" }
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]

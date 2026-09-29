@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+    branches: [main]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Download inputs
+        run: bash download.sh downloads
+
+      - name: Unit and integration tests
+        run: python -m pytest -q
+
+      - name: gamete-sim lifter equals UCSC liftOver on all map markers
+        run: python validation/liftover_concordance.py downloads
+
+  pipeline:
+    needs: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - name: Build image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          load: true
+          tags: gamete-sim:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run full pipeline, require published checksums
+        run: |
+          mkdir -p gamete-sim-data
+          docker run --rm --user "$(id -u):$(id -g)" -e STRICT_CHECKSUMS=1 \
+            -v "$PWD/gamete-sim-data:/data" gamete-sim:ci
+
+      - name: Keep outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: gamete-sim-output
+          path: |
+            gamete-sim-data/output/*.csv
+            gamete-sim-data/output/genetic_map/
+            gamete-sim-data/output/qc/*.tsv
+            gamete-sim-data/output/qc/*.png
+
+      - name: Log in to GitHub Container Registry
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Image tags
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=sha
+
+      - name: Push image
+        if: github.event_name != 'pull_request'
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
