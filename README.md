@@ -4,9 +4,40 @@ Simulates **exactly 10,000 human gametes** as GRCh38 (hg38) haplotype segments, 
 
 - **Output:** `gametes_male_hg38.csv` and `gametes_female_hg38.csv`. Each file holds 10,000 gametes. Each gamete is a list of segments that tile chr1-22 from base 1 to the last base. Each segment comes from haplotype 1 or haplotype 2 of the parent.
 - **Model:** the Bhérer et al. (2017) refined sex-specific EUR genetic map, lifted to hg38 once, marker by marker. The crossover model is the ped-sim / xoi Housworth-Stahl gamma model with the Campbell et al. (2015) interference parameters.
+- **Download or run:** get the finished files from the [v1.0.0 release](https://github.com/human-genomics/gamete-sim/releases/tag/v1.0.0), or make them yourself with one command.
 - **Checks:** the lift equals UCSC liftOver on all 781,192 map markers. The simulated crossovers agree with ped-sim v1.4.7 on the same map. Local and Docker runs give byte-identical files ([`checksums.sha256`](checksums.sha256)).
 
-## Quick start
+## Download the outputs (no run needed)
+
+The outputs of the default run (`N_GAMETES=10000`, `SEED=42`) are attached to the [v1.0.0 release](https://github.com/human-genomics/gamete-sim/releases/tag/v1.0.0). You do not need Docker or Python to use them.
+
+| File | Size | Content |
+|---|---:|---|
+| [`gametes_male_hg38.csv`](https://github.com/human-genomics/gamete-sim/releases/download/v1.0.0/gametes_male_hg38.csv) | 11.9 MB | 10,000 gametes of a male parent (sperm), 481,465 segments |
+| [`gametes_female_hg38.csv`](https://github.com/human-genomics/gamete-sim/releases/download/v1.0.0/gametes_female_hg38.csv) | 16.0 MB | 10,000 gametes of a female parent (eggs), 629,565 segments |
+| [`genetic_map_hg38.tsv`](https://github.com/human-genomics/gamete-sim/releases/download/v1.0.0/genetic_map_hg38.tsv) | 34.9 MB | The hg38 sex-specific genetic map used for the simulation, 780,563 markers |
+| [`SHA256SUMS`](https://github.com/human-genomics/gamete-sim/releases/download/v1.0.0/SHA256SUMS) | < 1 KB | Checksums of the three files |
+
+Download and check all files:
+
+```bash
+for f in gametes_male_hg38.csv gametes_female_hg38.csv genetic_map_hg38.tsv SHA256SUMS; do
+    curl -fsSLO "https://github.com/human-genomics/gamete-sim/releases/download/v1.0.0/$f"
+done
+sha256sum -c SHA256SUMS      # macOS: shasum -a 256 -c SHA256SUMS
+```
+
+The expected checksums are:
+
+```
+7791dd7161d90ccc5acff26ecda186224b1b9597546b18cbc1b7e8b19746c163  gametes_male_hg38.csv
+11a6c943d416987540bd96a5d89dcad149554264ecf3fe050a625103b5c0e570  gametes_female_hg38.csv
+be35d9769731a6615c0a02edaf5a5e88f13176db54c433b321993aff3456de5c  genetic_map_hg38.tsv
+```
+
+The file format is in [Output](#output). The pipeline below makes the same files, byte for byte. Run it yourself to check them, or to use a different `SEED` or `N_GAMETES`.
+
+## Run it yourself
 
 ### Docker (recommended)
 
